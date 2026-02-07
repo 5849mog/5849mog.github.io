@@ -58,17 +58,37 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
         
-        .left-controls { display: flex; gap: 8px; align-items: center; }
+        .left-controls { display: flex; gap: 8px; align-items: center; position: relative; }
+        
+        /* 设置按钮 & 菜单样式 */
         .setting-btn {
             width: 30px; height: 30px; border-radius: 50%; border: 1px solid #444;
-            background: #222; color: #666; display: flex; justify-content: center; align-items: center;
-            font-size: 14px; cursor: pointer; transition: 0.2s; position: relative;
+            background: #222; color: #ccc; display: flex; justify-content: center; align-items: center;
+            font-size: 16px; cursor: pointer; transition: 0.2s; position: relative;
         }
-        .setting-btn.active { background: #00c853; color: #fff; border-color: #69f0ae; box-shadow: 0 0 8px rgba(0,200,83,0.4); }
+        .setting-btn:active, .setting-btn.open { background: #333; border-color: #888; color: #fff; }
+
+        #settings-menu {
+            position: absolute; top: 40px; left: 0;
+            background: #1a1a1a; border: 1px solid #444; border-radius: 6px;
+            padding: 5px; min-width: 110px; z-index: 150;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        
+        .s-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 10px; background: #222; border-radius: 4px;
+            cursor: pointer; font-size: 11px; color: #aaa; transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .s-item:hover { background: #333; color: #fff; }
+        .s-item.active { background: #1b5e20; border-color: #43a047; color: #fff; }
+        .s-state { font-family: monospace; font-size: 10px; margin-left: 8px; opacity: 0.7; }
         
         /* 公告红点 */
         .notification-dot {
-            position: absolute; top: -2px; right: -2px; width: 10px; height: 10px;
+            position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
             background: #ff1744; border-radius: 50%; border: 1px solid #fff;
             display: none; animation: pulse 2s infinite;
         }
@@ -213,7 +233,6 @@
 <body>
 <audio id="bgm" src="You.mp3" loop preload="auto"></audio>
 
-<!-- 公告弹窗 -->
 <div id="notice-modal">
     <div class="notice-container">
         <div class="notice-header">
@@ -233,7 +252,7 @@
     <button class="menu-btn secondary" onclick="togglePresetList()">📂 预设存档/挑战</button>
     
     <div id="preset-list"></div>
-    <div style="margin-top:20px; font-size:12px; color:#555">Ver 1.8.0 - Live Notice</div>
+    <div style="margin-top:20px; font-size:12px; color:#555">Ver 1.8.1 - UX Optimized</div>
 </div>
 
 <div id="pause-screen" class="overlay-screen hidden">
@@ -248,13 +267,25 @@
 <div id="shaker">
     <div id="top-bar">
         <div class="left-controls">
-            <!-- 新增公告按钮 -->
-            <div id="notice-btn" class="setting-btn" onclick="openNotice()">
-                🔔
-                <div id="notice-dot" class="notification-dot"></div>
+            <div id="settings-main-btn" class="setting-btn" onclick="toggleSettingsMenu()">
+                ⚙️
+                <div id="settings-dot" class="notification-dot"></div>
             </div>
-            <div id="bgm-btn" class="setting-btn" onclick="toggleBGM()">🎵</div>
-            <div id="sakura-btn" class="setting-btn" onclick="toggleSakura()">🌸</div>
+            
+            <div id="settings-menu" class="hidden">
+                <div class="s-item" onclick="openNotice(); toggleSettingsMenu()">
+                    <span>📢 公告</span>
+                    <div id="menu-notice-dot" class="notification-dot" style="position:relative; display:block; top:auto; right:auto;"></div>
+                </div>
+                <div id="s-bgm" class="s-item" onclick="toggleBGM()">
+                    <span>🎵 音乐</span>
+                    <span class="s-state">OFF</span>
+                </div>
+                <div id="s-sakura" class="s-item" onclick="toggleSakura()">
+                    <span>🌸 特效</span>
+                    <span class="s-state">OFF</span>
+                </div>
+            </div>
         </div>
 
         <div class="stat-group">
@@ -310,7 +341,7 @@ const PRESET_SAVES_CONFIG = [
     {
         name: "第10波：小试牛刀",
         desc: "已跳过前期，稍微有点钱",
-        file: "presets/wave10.pds" // 确保这个路径和你在GitHub上的路径一致
+        file: "presets/wave10.pds" 
     },
     {
         name: "第34波：较为富有 压力较小",
@@ -330,11 +361,11 @@ const PRESET_SAVES_CONFIG = [
 ];
 
 // --- 动态公告系统 ---
-const NOTICE_URL = "./notice.json"; // 你的 GitHub 上的 json 路径
+const NOTICE_URL = "./notice.json"; 
 let noticeData = null;
 
 function initNoticeSystem() {
-    // 加上时间戳防止 GitHub 缓存（很重要！）
+    // 加上时间戳防止 GitHub 缓存
     fetch(NOTICE_URL + "?t=" + Date.now())
         .then(res => {
             if(!res.ok) throw new Error("No notice file");
@@ -344,19 +375,19 @@ function initNoticeSystem() {
             if (!data.system || !data.system.enabled) return;
             noticeData = data.notices;
             
-            // 检查是否有未读的强制弹窗
+            // 检查是否有未读
             let hasUnread = false;
             let shouldPopup = false;
             
             noticeData.forEach(n => {
-                // 简单逻辑：只要有公告就显示红点
                 hasUnread = true; 
-                // 强制弹窗逻辑
                 if (n.forcePopup) shouldPopup = true;
             });
 
             if (hasUnread) {
-                document.getElementById('notice-dot').style.display = 'block';
+                // 显示设置按钮上的红点和菜单里的红点
+                document.getElementById('settings-dot').style.display = 'block';
+                document.getElementById('menu-notice-dot').style.display = 'block';
             }
             
             if (shouldPopup) {
@@ -370,7 +401,10 @@ function initNoticeSystem() {
 
 function openNotice() {
     document.getElementById('notice-modal').style.display = 'flex';
-    document.getElementById('notice-dot').style.display = 'none'; // 打开后消除红点
+    // 消除红点
+    document.getElementById('settings-dot').style.display = 'none'; 
+    document.getElementById('menu-notice-dot').style.display = 'none'; 
+    
     const body = document.getElementById('notice-body');
     body.innerHTML = '';
 
@@ -472,9 +506,21 @@ function init() {
     window.addEventListener('resize', resize);
     generateMaze();
     initUI();
-    initNoticeSystem(); // 启动公告系统
+    initNoticeSystem(); 
     gameState = STATE.MENU;
     requestAnimationFrame(gameLoop);
+    
+    // 点击任意地方关闭设置菜单
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('settings-menu');
+        const btn = document.getElementById('settings-main-btn');
+        if (!menu.classList.contains('hidden')) {
+            if (!menu.contains(event.target) && !btn.contains(event.target)) {
+                menu.classList.add('hidden');
+                btn.classList.remove('open');
+            }
+        }
+    });
 }
 
 function togglePresetList() {
@@ -554,6 +600,19 @@ function startNewGame() {
     gameState = STATE.PLAYING;
 }
 
+// === 设置菜单相关逻辑 ===
+function toggleSettingsMenu() {
+    const menu = document.getElementById('settings-menu');
+    const btn = document.getElementById('settings-main-btn');
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        btn.classList.add('open');
+    } else {
+        menu.classList.add('hidden');
+        btn.classList.remove('open');
+    }
+}
+
 function toggleBGM() {
     const audio = document.getElementById('bgm');
     musicEnabled = !musicEnabled;
@@ -584,11 +643,26 @@ function toggleSakura() {
 }
 
 function updateSettingsUI() {
-    const bgmBtn = document.getElementById('bgm-btn');
-    const sakuraBtn = document.getElementById('sakura-btn');
-    if (musicEnabled) bgmBtn.classList.add('active'); else bgmBtn.classList.remove('active');
-    if (sakuraEnabled) sakuraBtn.classList.add('active'); else sakuraBtn.classList.remove('active');
+    const bgmItem = document.getElementById('s-bgm');
+    const sakuraItem = document.getElementById('s-sakura');
+    
+    if (musicEnabled) {
+        bgmItem.classList.add('active');
+        bgmItem.querySelector('.s-state').innerText = 'ON';
+    } else {
+        bgmItem.classList.remove('active');
+        bgmItem.querySelector('.s-state').innerText = 'OFF';
+    }
+
+    if (sakuraEnabled) {
+        sakuraItem.classList.add('active');
+        sakuraItem.querySelector('.s-state').innerText = 'ON';
+    } else {
+        sakuraItem.classList.remove('active');
+        sakuraItem.querySelector('.s-state').innerText = 'OFF';
+    }
 }
+// ====================
 
 function resetGame() {
     gold = 6000;
