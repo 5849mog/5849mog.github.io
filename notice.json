@@ -1,30 +1,23 @@
 {
   "system": {
     "enabled": true,
-    "version": "1.8.0"
+    "version": "1.8.1"
   },
   "notices": [
     {
-      "id": 1001,
+      "id": 20260201,
       "type": "event",
-      "title": "🎉 1.8.0 版本更新 & 周末福利",
-      "content": "全新的<b>截击机(Drone)</b>机制已上线！<br>现在无法在空地建造截击机，必须挂载到现有防御塔上。<br>为了庆祝更新，本周末初始金币增加！",
-      "actionText": "查看 GitHub 源码",
+      "title": "项目版本更新公告 V1.8.1",
+      "content": "<div style='border-left: 4px solid #00e676; padding-left: 10px; margin-bottom: 15px;'><b>[核心摘要]</b>：本版本已完成对截击机系统 (Drone System) 的底层重构，并针对高密度波次下的帧率表现进行了深度优化。</div><br><b>一、 战术机制深度调整</b><br>• <span style='color: #00e676;'>[新增]</span> <b>挂载协议</b>：所有无人机单元现已接入“建筑耦合”逻辑，必须依附于防御塔基座运行。<br>• <span style='color: #ffab00;'>[修正]</span> 修复了核弹井在某些极端条件下导致的伤害判定延迟问题。<br><br><b>二、 性能指标分析</b><br>基于 WebGL 渲染引擎的优化，当前版本在同屏单位超过 500 个时，CPU 占用率降低了约 <span style='color: #00e676;'>15%</span>。<br><br><b>三、 社区协作</b><br>感谢在 GitHub 提交 Issue 的开发者们，您的反馈是系统迭代的核心动力。",
+      "actionText": "查阅技术白皮书",
       "actionLink": "https://github.com/你的用户名/你的仓库名",
       "forcePopup": true
     },
     {
-      "id": 1002,
+      "id": 20260202,
       "type": "warning",
-      "title": "⚠️ 平衡性调整预告",
-      "content": "监测到核弹井(Nuke)在后期过于强力，下个版本可能会增加其冷却时间。<br>请各位指挥官提前调整战术。",
-      "forcePopup": false
-    },
-    {
-      "id": 1003,
-      "type": "normal",
-      "title": "小贴士",
-      "content": "点击顶部的 🌸 按钮可以开启省电模式（关闭樱花特效）。",
+      "title": "安全与稳定性预警",
+      "content": "<b>关于浏览器兼容性的说明：</b><br>由于 1.8.1 版本引入了更高级的粒子计算着色器，建议玩家使用最新版本的 <b>Chrome</b> 或 <b>Safari</b> 访问以获得最佳视听效果。<br><br><div style='background: rgba(255, 82, 82, 0.1); padding: 10px; border-radius: 4px; border: 1px dashed #ff5252;'><b>特别提醒</b>：严禁通过控制台修改全局变量 `gold`，非法数据溢出可能导致存档文件损坏。</div>",
       "forcePopup": false
     }
   ]
