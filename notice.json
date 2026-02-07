@@ -1,0 +1,31 @@
+{
+  "system": {
+    "enabled": true,
+    "version": "1.8.0"
+  },
+  "notices": [
+    {
+      "id": 1001,
+      "type": "event",
+      "title": "🎉 1.8.0 版本更新 & 周末福利",
+      "content": "全新的<b>截击机(Drone)</b>机制已上线！<br>现在无法在空地建造截击机，必须挂载到现有防御塔上。<br>为了庆祝更新，本周末初始金币增加！",
+      "actionText": "查看 GitHub 源码",
+      "actionLink": "https://github.com/你的用户名/你的仓库名",
+      "forcePopup": true
+    },
+    {
+      "id": 1002,
+      "type": "warning",
+      "title": "⚠️ 平衡性调整预告",
+      "content": "监测到核弹井(Nuke)在后期过于强力，下个版本可能会增加其冷却时间。<br>请各位指挥官提前调整战术。",
+      "forcePopup": false
+    },
+    {
+      "id": 1003,
+      "type": "normal",
+      "title": "小贴士",
+      "content": "点击顶部的 🌸 按钮可以开启省电模式（关闭樱花特效）。",
+      "forcePopup": false
+    }
+  ]
+}
