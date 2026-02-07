@@ -62,9 +62,53 @@
         .setting-btn {
             width: 30px; height: 30px; border-radius: 50%; border: 1px solid #444;
             background: #222; color: #666; display: flex; justify-content: center; align-items: center;
-            font-size: 14px; cursor: pointer; transition: 0.2s;
+            font-size: 14px; cursor: pointer; transition: 0.2s; position: relative;
         }
         .setting-btn.active { background: #00c853; color: #fff; border-color: #69f0ae; box-shadow: 0 0 8px rgba(0,200,83,0.4); }
+        
+        /* 公告红点 */
+        .notification-dot {
+            position: absolute; top: -2px; right: -2px; width: 10px; height: 10px;
+            background: #ff1744; border-radius: 50%; border: 1px solid #fff;
+            display: none; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        /* 公告弹窗样式 */
+        #notice-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 200;
+            display: none; justify-content: center; align-items: center;
+        }
+        .notice-container {
+            width: 85%; max-width: 400px; max-height: 70%; background: #1a1a1a;
+            border: 1px solid #444; border-radius: 8px; display: flex; flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        .notice-header {
+            padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;
+            background: #222; border-radius: 8px 8px 0 0;
+        }
+        .notice-title { font-size: 16px; font-weight: bold; color: #fff; }
+        .notice-close { cursor: pointer; color: #888; font-size: 20px; }
+        .notice-body { padding: 15px; overflow-y: auto; }
+        
+        /* 单条公告卡片 */
+        .notice-card {
+            background: #252525; border-left: 4px solid #555; padding: 12px;
+            margin-bottom: 15px; border-radius: 2px;
+        }
+        .notice-card.type-event { border-left-color: #ffd700; background: rgba(255, 215, 0, 0.05); }
+        .notice-card.type-warning { border-left-color: #ff1744; background: rgba(255, 23, 68, 0.05); }
+        .notice-card.type-normal { border-left-color: #00e676; }
+        
+        .n-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-bottom: 5px; font-weight: bold; color: #000; }
+        .n-title { font-size: 14px; font-weight: bold; color: #eee; margin-bottom: 6px; }
+        .n-content { font-size: 12px; color: #aaa; line-height: 1.5; }
+        .n-btn { 
+            margin-top: 10px; padding: 6px 12px; background: #333; color: #fff; text-decoration: none;
+            display: inline-block; font-size: 11px; border-radius: 4px; border: 1px solid #555;
+        }
 
         .stat-group { display: flex; gap: 8px; flex: 1; justify-content: center; }
         .stat-item { display: flex; align-items: center; }
@@ -100,6 +144,7 @@
         #bottom-panel {
             height: 150px; background: #0e0e0e; border-top: 1px solid #333;
             display: flex; flex-direction: column; flex-shrink: 0; z-index: 10;
+            position: relative;
         }
         #wave-control-btn {
             height: 32px; background: #b71c1c; color: white; border: none;
@@ -133,6 +178,28 @@
         .card-cost { font-size: 11px; color: #ffd700; font-family: monospace; font-weight: bold; }
         .card-desc { font-size: 9px; color: #aaa; transform: scale(0.85); white-space: nowrap; margin-top: -1px;}
         
+        #tower-controls {
+            display: none; flex: 1; padding: 10px;
+            flex-direction: row; justify-content: center; align-items: center; gap: 15px;
+            background: #111;
+        }
+        .control-group {
+            display: flex; flex-direction: column; align-items: center; color: #fff;
+            background: #1e1e1e; padding: 8px 15px; border-radius: 8px; border: 1px solid #333;
+            min-width: 100px;
+        }
+        .control-info { font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        .control-btn {
+            width: 100%; padding: 8px; border-radius: 4px; border: none;
+            font-weight: bold; cursor: pointer; font-size: 13px; color: white;
+            display: flex; justify-content: center; align-items: center; gap: 5px;
+        }
+        .btn-upgrade { background: #2e7d32; border: 1px solid #43a047; }
+        .btn-upgrade:active { background: #43a047; }
+        .btn-sell { background: #c62828; border: 1px solid #ef5350; }
+        .btn-sell:active { background: #ef5350; }
+        .btn-cancel { background: #424242; border: 1px solid #616161; width: 40px; height: 100%;}
+        
         #toast {
             position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.9); padding: 8px 18px; border-radius: 4px; border: 1px solid #00c853;
@@ -146,19 +213,27 @@
 <body>
 <audio id="bgm" src="You.mp3" loop preload="auto"></audio>
 
+<!-- 公告弹窗 -->
+<div id="notice-modal">
+    <div class="notice-container">
+        <div class="notice-header">
+            <div class="notice-title">📢 指挥中心公告</div>
+            <div class="notice-close" onclick="closeNotice()">✖</div>
+        </div>
+        <div id="notice-body" class="notice-body">
+            <div style="text-align:center; color:#555">正在连接指挥部...</div>
+        </div>
+    </div>
+</div>
+
 <div id="start-screen" class="overlay-screen">
     <h1>PLANET DEFENSE<br><span style="font-size:20px; color:#aaa">BLACK BOX EDITION</span></h1>
     <button class="menu-btn" onclick="startNewGame()">开始新游戏</button>
     <button class="menu-btn secondary" onclick="document.getElementById('file-input').click()">导入本地对局</button>
     <button class="menu-btn secondary" onclick="togglePresetList()">📂 预设存档/挑战</button>
     
-    <!-- 预设存档列表，默认隐藏 -->
-    <div id="preset-list">
-        <!-- 这里的列表会通过 JS 动态生成 -->
-        <div style="padding:15px; text-align:center; color:#555;">加载中...</div>
-    </div>
-
-    <div style="margin-top:20px; font-size:12px; color:#555">Ver 1.4.0 - Preset Saves</div>
+    <div id="preset-list"></div>
+    <div style="margin-top:20px; font-size:12px; color:#555">Ver 1.8.0 - Live Notice</div>
 </div>
 
 <div id="pause-screen" class="overlay-screen hidden">
@@ -173,6 +248,11 @@
 <div id="shaker">
     <div id="top-bar">
         <div class="left-controls">
+            <!-- 新增公告按钮 -->
+            <div id="notice-btn" class="setting-btn" onclick="openNotice()">
+                🔔
+                <div id="notice-dot" class="notification-dot"></div>
+            </div>
             <div id="bgm-btn" class="setting-btn" onclick="toggleBGM()">🎵</div>
             <div id="sakura-btn" class="setting-btn" onclick="toggleSakura()">🌸</div>
         </div>
@@ -201,6 +281,23 @@
     <div id="bottom-panel">
         <button id="wave-control-btn" onclick="manualNextWave()">⚔️ 战斗开始</button>
         <div id="shop"></div>
+        <div id="tower-controls">
+            <button class="control-btn btn-cancel" onclick="deselectAll()">✖</button>
+            <div class="control-group">
+                <div id="ctrl-info-name" class="control-info" style="color:#00e676; font-weight:bold">火神炮 Lv.1</div>
+                <button class="control-btn btn-upgrade" onclick="upgradeSelectedTower()">
+                    <span>⬆ 升级</span>
+                    <span id="ctrl-upgrade-cost" style="color:#ffd700; font-family:monospace">200</span>
+                </button>
+            </div>
+            <div class="control-group" style="border-color:#b71c1c">
+                <div class="control-info">返还 70%</div>
+                <button class="control-btn btn-sell" onclick="sellSelectedTower()">
+                    <span>💰 出售</span>
+                    <span id="ctrl-sell-price" style="color:#ffd700; font-family:monospace">140</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 <script>
@@ -209,31 +306,90 @@ const MAP_ROWS = 21;
 let TILE_SIZE = 0;
 
 // === 预设存档配置区 ===
-// 1. 先自己玩游戏，玩到想要的状态，点暂停->导出。
-// 2. 将导出的 .pds 文件重命名，上传到 GitHub 仓库（例如放在 'presets' 文件夹下）。
-// 3. 在这里修改配置。
 const PRESET_SAVES_CONFIG = [
-    {
-        name: "第10波：小试牛刀",
-        desc: "已跳过前期，稍微有点钱",
-        file: "presets/wave10.pds" // 确保这个路径和你在GitHub上的路径一致
-    },
-    {
-        name: "第34波：较为富有 压力较小",
-        desc: "敌人变强，但可以爽玩",
-        file: "presets/wave34.pds"
-    },
-    {
-        name: "第80波，后期对局",
-        desc: "基建较完善，但预留了较多关键建造位",
-        file: "presets/god_mode.pds"
-    },
-    {
-        name: "第90波，后期对局",
-        desc: "与80关存档同样的基建，但难度激增",
-        file: "presets/wave90.pds"
-    }
+    { name: "第10波：小试牛刀", desc: "跳过前期，稍微有点钱", file: "presets/wave10.pds" },
+    { name: "第30波：中盘危机", desc: "敌人开始变强，需要策略", file: "presets/wave30.pds" },
+    { name: "神装开局 (测试)", desc: "满级光棱塔，无需努力", file: "presets/god_mode.pds" }
 ];
+
+// --- 动态公告系统 ---
+const NOTICE_URL = "./notice.json"; // 你的 GitHub 上的 json 路径
+let noticeData = null;
+
+function initNoticeSystem() {
+    // 加上时间戳防止 GitHub 缓存（很重要！）
+    fetch(NOTICE_URL + "?t=" + Date.now())
+        .then(res => {
+            if(!res.ok) throw new Error("No notice file");
+            return res.json();
+        })
+        .then(data => {
+            if (!data.system || !data.system.enabled) return;
+            noticeData = data.notices;
+            
+            // 检查是否有未读的强制弹窗
+            let hasUnread = false;
+            let shouldPopup = false;
+            
+            noticeData.forEach(n => {
+                // 简单逻辑：只要有公告就显示红点
+                hasUnread = true; 
+                // 强制弹窗逻辑
+                if (n.forcePopup) shouldPopup = true;
+            });
+
+            if (hasUnread) {
+                document.getElementById('notice-dot').style.display = 'block';
+            }
+            
+            if (shouldPopup) {
+                openNotice();
+            }
+        })
+        .catch(err => {
+            console.log("Notice system offline:", err);
+        });
+}
+
+function openNotice() {
+    document.getElementById('notice-modal').style.display = 'flex';
+    document.getElementById('notice-dot').style.display = 'none'; // 打开后消除红点
+    const body = document.getElementById('notice-body');
+    body.innerHTML = '';
+
+    if (!noticeData || noticeData.length === 0) {
+        body.innerHTML = '<div style="text-align:center;color:#666">暂无新公告</div>';
+        return;
+    }
+
+    noticeData.forEach(n => {
+        let typeColor = '#00e676';
+        let typeName = '公告';
+        let typeClass = 'type-normal';
+        
+        if (n.type === 'warning') { typeColor = '#ff1744'; typeName = '警告'; typeClass = 'type-warning'; }
+        if (n.type === 'event') { typeColor = '#ffd700'; typeName = '活动'; typeClass = 'type-event'; }
+
+        let actionBtn = '';
+        if (n.actionText && n.actionLink) {
+            actionBtn = `<a href="${n.actionLink}" target="_blank" class="n-btn">${n.actionText}</a>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = `notice-card ${typeClass}`;
+        card.innerHTML = `
+            <div class="n-tag" style="background:${typeColor}">${typeName}</div>
+            <div class="n-title">${n.title}</div>
+            <div class="n-content">${n.content}</div>
+            ${actionBtn}
+        `;
+        body.appendChild(card);
+    });
+}
+
+function closeNotice() {
+    document.getElementById('notice-modal').style.display = 'none';
+}
 
 // 游戏状态枚举
 const STATE = { MENU: 0, PLAYING: 1, PAUSED: 2, GAMEOVER: 3 };
@@ -253,7 +409,7 @@ const TOWER_TYPES = {
     MISSILE:{ id: 'missile',name: '追猎者', cost: 1200, color: '#37474f', icon:'🚀', range: 30.0, damage: 1000, cooldown: 70, desc: '全图/多重齐射' }, 
     NUKE:   { id: 'nuke',   name: '核弹井', cost: 1800, color: '#d50000', icon:'☢️', range: 6.0, damage: 10000, cooldown: 150, desc: '全屏震慑' },
     GOLD:   { id: 'gold',   name: '黑心矿', cost: 400, color: '#fdd835', icon:'💰', range: 3.0, damage: 0, cooldown: 10, desc: '暴利/赏金光环' },
-    DRONE:  { id: 'drone',  name: '截击机', cost: 150, color: '#00bcd4', icon:'✈️', range: 8.0, damage: 40, cooldown: 12, desc: '对地空/4架过载' }
+    DRONE:  { id: 'drone',  name: '截击机', cost: 150, color: '#00bcd4', icon:'✈️', range: 8.0, damage: 40, cooldown: 12, desc: '挂载单位/不可独造' }
 };
 
 const ENEMY_TYPES = {
@@ -279,7 +435,8 @@ let towers = [], enemies = [], projectiles = [], particles = [], zones = [];
 let gold = 6000;
 let lives = 30;
 let wave = 0;
-let selectedTower = null;
+let selectedTower = null; 
+let selectedMapTower = null; 
 let shakeTimer = 0;
 
 let waveActive = false;
@@ -289,7 +446,6 @@ let autoWave = false;
 let autoTimer = 0;
 const AUTO_DELAY_SEC = 2;
 
-// --- 全局设置状态 ---
 let musicEnabled = false;
 let sakuraEnabled = false;
 let sakuraScriptLoaded = false;
@@ -299,11 +455,11 @@ function init() {
     window.addEventListener('resize', resize);
     generateMaze();
     initUI();
+    initNoticeSystem(); // 启动公告系统
     gameState = STATE.MENU;
     requestAnimationFrame(gameLoop);
 }
 
-// --- 预设存档列表逻辑 ---
 function togglePresetList() {
     const list = document.getElementById('preset-list');
     if (list.style.display === 'block') {
@@ -348,11 +504,10 @@ function loadPresetSave(url) {
             return response.text();
         })
         .then(data => {
-            // 复用核心解码逻辑
             const success = importGameData(data);
             if (!success) {
                 alert("❌ 读取预设存档失败: 格式错误或文件损坏");
-                renderPresets(); // 恢复列表
+                renderPresets(); 
             }
         })
         .catch(err => {
@@ -362,7 +517,6 @@ function loadPresetSave(url) {
         });
 }
 
-// --- 音频与特效 ---
 function startBGM() {
     const audio = document.getElementById('bgm');
     if (musicEnabled) {
@@ -431,6 +585,7 @@ function resetGame() {
     waveActive = false;
     spawnQueue = [];
     autoWave = false;
+    deselectAll();
     document.getElementById('auto-switch').classList.remove('on');
     updateUI();
 }
@@ -450,7 +605,7 @@ function initUI() {
         const btn = document.createElement('div');
         btn.className = 'shop-card';
         btn.id = 'btn-' + key;
-        btn.onclick = () => selectTower(key);
+        btn.onclick = () => selectShopTower(key);
         btn.innerHTML = `
             <div class="icon-box" style="background:${t.color}22; color:${t.color}">${t.icon}</div>
             <div class="card-name">${t.name}</div>
@@ -478,11 +633,6 @@ function generateMaze() {
     }
     map[MAP_ROWS-1][c] = 1; path.push({c,r:MAP_ROWS-1});
 }
-
-// ================= 核心类定义 (保持原样) =================
-// ... (Enemy, Zone, Tower, Projectile Classes - 为了节省篇幅，这里复用你之前的逻辑，未做修改) ...
-// 请保留之前的 Enemy, Zone, Tower, Projectile 类代码
-// --------------------------------------------------
 
 class Enemy {
     constructor(typeKey, startX, startY, pathIdx) {
@@ -787,6 +937,23 @@ class Tower {
         createFloatingText(this.x, this.y, "UPGRADE!", "#00e676");
         return true;
     }
+    
+    getRefundAmount() {
+        const baseCost = TOWER_TYPES[this.baseType].cost;
+        let totalCost = baseCost;
+        for(let l=1; l < this.level; l++) {
+            totalCost += baseCost * l;
+        }
+        if (this.baseType === 'DRONE') {
+            totalCost += this.drones.length * 150;
+        }
+        return Math.floor(totalCost * 0.7); 
+    }
+    
+    getUpgradeCost() {
+        if (this.level >= this.maxLevel) return 0;
+        return TOWER_TYPES[this.baseType].cost * this.level;
+    }
 
     update() {
         if (this.frozen > 0) {
@@ -1005,6 +1172,21 @@ class Tower {
         const scale = 0.8 + (this.level-1)*0.03; 
         const s = TILE_SIZE * Math.min(1.1, scale);
         
+        if (selectedMapTower === this) {
+            const rangePx = this.type.range * this.buffStats.rangeMult * TILE_SIZE;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, rangePx, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.x - s/2 - 2, this.y - s/2 - 2, s + 4, s + 4);
+        }
+
         if (this.baseType === 'BUFF') {
              const angle = Date.now() / 500;
              ctx.save();
@@ -1253,26 +1435,21 @@ function drawVisuals() {
     }
 }
 
-// ================= 游戏控制与序列化系统 =================
-
 function gameLoop() {
     if (gameState !== STATE.PLAYING) {
         if (gameState === STATE.PAUSED) {
-            // 暂停时不更新逻辑，只绘制画面保持背景
             drawGameScene();
         }
         requestAnimationFrame(gameLoop);
         return;
     }
 
-    // --- 游戏逻辑更新 ---
     const shaker = document.getElementById('shaker');
     if (shakeTimer > 0) {
         shakeTimer--;
         shaker.style.transform = `translate(${(Math.random()-0.5)*8}px, ${(Math.random()-0.5)*8}px)`;
     } else { shaker.style.transform = `translate(0, 0)`; }
 
-    // 波次逻辑
     if (!waveActive && autoWave) {
         if (enemies.length === 0 && spawnQueue.length === 0) {
             if (autoTimer > 0) {
@@ -1295,12 +1472,10 @@ function gameLoop() {
         document.getElementById('wave-control-btn').disabled = false;
     }
 
-    // Buff 重置
     towers.forEach(t => {
         t.buffStats = { dmgMult: 1.0, rangeMult: 1.0, cdr: 1.0, purified: false };
     });
 
-    // 增幅器逻辑
     towers.forEach(t => {
         if (t.baseType === 'BUFF') {
             const rangePx = t.type.range * TILE_SIZE;
@@ -1342,7 +1517,6 @@ function gameLoop() {
 function drawGameScene() {
     ctx.clearRect(0,0,canvas.width, canvas.height);
     
-    // 绘制地图
     for(let r=0; r<MAP_ROWS; r++){
         for(let c=0; c<MAP_COLS; c++){
             const x = c*TILE_SIZE, y = r*TILE_SIZE;
@@ -1358,7 +1532,6 @@ function drawGameScene() {
     projectiles.forEach(p => p.draw());
     drawVisuals();
 
-    // 粒子
     for(let i=particles.length-1; i>=0; i--) {
         let pt = particles[i]; 
         ctx.globalAlpha = pt.life / 30; ctx.fillStyle = pt.color;
@@ -1426,18 +1599,90 @@ function startWaveLogic() {
     }
 }
 
-function selectTower(key) {
+function selectShopTower(key) {
     if (gameState !== STATE.PLAYING) return;
-    selectedTower = (selectedTower === key) ? null : key;
+    deselectAll(); 
+    selectedTower = key; 
+    
+    const btn = document.getElementById('btn-'+key);
+    if (btn.classList.contains('active')) {
+        selectedTower = null;
+    }
+    
     updateUI();
     const t = document.getElementById('toast');
     if (selectedTower) {
         const type = TOWER_TYPES[selectedTower];
-        t.innerHTML = `<div>${type.name}</div><div class="sub">升级 = 原价 x 等级</div>`;
+        let msg = "点击地图建造";
+        if (selectedTower === 'DRONE') msg = "点击已有的塔进行挂载";
+        t.innerHTML = `<div>${type.name}</div><div class="sub">${msg}</div>`;
         t.style.opacity = 1;
         clearTimeout(t.timer);
         t.timer = setTimeout(() => t.style.opacity = 0, 3000);
     }
+}
+
+function deselectAll() {
+    selectedTower = null;
+    selectedMapTower = null;
+    document.getElementById('shop').style.display = 'flex';
+    document.getElementById('tower-controls').style.display = 'none';
+    updateUI();
+}
+
+function showTowerControls(tower) {
+    selectedMapTower = tower;
+    selectedTower = null; 
+    updateUI(); 
+    
+    document.getElementById('shop').style.display = 'none';
+    const controls = document.getElementById('tower-controls');
+    controls.style.display = 'flex';
+    
+    document.getElementById('ctrl-info-name').innerText = `${tower.type.name} Lv.${tower.level}`;
+    
+    const upCost = tower.getUpgradeCost();
+    const upBtn = document.querySelector('.btn-upgrade');
+    if (tower.level >= tower.maxLevel) {
+        upBtn.innerHTML = '已满级';
+        upBtn.style.opacity = 0.5;
+        upBtn.disabled = true;
+    } else {
+        upBtn.innerHTML = `<span>⬆ 升级</span><span style="color:#ffd700; font-family:monospace">${upCost}</span>`;
+        upBtn.style.opacity = 1;
+        upBtn.disabled = false;
+    }
+    
+    document.getElementById('ctrl-sell-price').innerText = tower.getRefundAmount();
+}
+
+function upgradeSelectedTower() {
+    if (!selectedMapTower) return;
+    const t = selectedMapTower;
+    const cost = t.getUpgradeCost();
+    
+    if (gold >= cost) {
+        if (t.upgrade()) {
+            gold -= cost;
+            createFloatingText(t.x, t.y, `-${cost}`, "#ffd700");
+            showTowerControls(t); 
+            updateUI();
+        }
+    } else {
+        createFloatingText(t.x, t.y, `缺钱`, "#f00");
+    }
+}
+
+function sellSelectedTower() {
+    if (!selectedMapTower) return;
+    const refund = selectedMapTower.getRefundAmount();
+    gold += refund;
+    
+    towers = towers.filter(t => t !== selectedMapTower);
+    
+    createFloatingText(selectedMapTower.x, selectedMapTower.y, `+${refund}`, "#00e676");
+    deselectAll();
+    updateUI();
 }
 
 function updateUI() {
@@ -1454,7 +1699,6 @@ function updateUI() {
 canvas.addEventListener('pointerup', e => {
     e.preventDefault();
     if (gameState !== STATE.PLAYING) return;
-    if (!selectedTower) return;
     
     const rect = canvas.getBoundingClientRect();
     const c = Math.floor((e.clientX - rect.left) / TILE_SIZE);
@@ -1462,10 +1706,10 @@ canvas.addEventListener('pointerup', e => {
     if (c<0 || c>=MAP_COLS || r<0 || r>=MAP_ROWS) return;
     
     const existing = towers.find(t => t.c === c && t.r === r);
-    const baseCost = TOWER_TYPES[selectedTower].cost;
-    
+
     if (selectedTower === 'DRONE') {
         if (existing) {
+            const baseCost = TOWER_TYPES.DRONE.cost;
             const maxDrones = existing.buffStats.purified ? 6 : 4; 
             if (gold >= baseCost) {
                 if (existing.drones.length < maxDrones) { 
@@ -1473,63 +1717,56 @@ canvas.addEventListener('pointerup', e => {
                     gold -= baseCost;
                     createFloatingText(existing.x, existing.y, "挂载!", "#0ff");
                 } else { createFloatingText(existing.x, existing.y, "挂载已满", "#f00"); }
-            }
+            } else { createFloatingText(existing.x, existing.y, "缺钱", "#f00"); }
+            updateUI();
+        } else {
+            createFloatingText(c*TILE_SIZE+20, r*TILE_SIZE+20, "需挂载在塔上", "#f00");
         }
-        updateUI(); return;
+        return; 
     }
 
-    if (map[r][c] === 0) { 
-        if (existing) {
-            if (existing.baseType === selectedTower) {
-                const upgradeCost = baseCost * existing.level;
-                if (gold >= upgradeCost) {
-                    if (existing.upgrade()) {
-                        gold -= upgradeCost;
-                        createFloatingText(existing.x, existing.y, `-${upgradeCost}`, "#ffd700");
-                    } else { createFloatingText(existing.x, existing.y, "已满级", "#f00"); }
-                } else { createFloatingText(existing.x, existing.y, `缺钱`, "#f00"); }
-            } else { createFloatingText(existing.x, existing.y, "无法覆盖", "#f00"); }
-        } else {
-            if (gold >= baseCost) {
-                gold -= baseCost;
-                towers.push(new Tower(c, r, selectedTower));
-                createFloatingText(c*TILE_SIZE+20, r*TILE_SIZE+20, "-"+baseCost, "#fff");
-            }
-        }
-        updateUI();
+    if (existing) {
+        showTowerControls(existing);
+        return;
     }
+    
+    if (selectedTower && map[r][c] === 0) {
+        const baseCost = TOWER_TYPES[selectedTower].cost;
+        if (gold >= baseCost) {
+            gold -= baseCost;
+            towers.push(new Tower(c, r, selectedTower));
+            createFloatingText(c*TILE_SIZE+20, r*TILE_SIZE+20, "-"+baseCost, "#fff");
+            updateUI();
+        } else {
+            createFloatingText(c*TILE_SIZE+20, r*TILE_SIZE+20, "缺钱", "#f00");
+        }
+        return; 
+    }
+
+    deselectAll();
 });
 
-// ================= 存档/读档系统 (反AI 混淆版) =================
-
 const ObscureStorage = {
-    // 固定的“噪声”乘数，用于污染数值。存档里不存真值。
     SALT_MULT: [13, 7, 23, 11, 19, 5, 17], 
     
-    // 简单的滚动异或加密。密钥根据前一个字符变化，导致无法通过简单频率分析破解。
     encrypt: function(numArray) {
         let res = "";
-        let key = 0xAB; // 初始种子
+        let key = 0xAB; 
         for (let i = 0; i < numArray.length; i++) {
             let val = numArray[i];
-            if (val < 0) val = 0; // 保护
+            if (val < 0) val = 0; 
             
-            // 数据污染：val * SALT + Index
             let saltedVal = val * this.SALT_MULT[i % this.SALT_MULT.length] + (i * 3);
-            
-            // 简单的转 Hex 字符串处理，加分隔符
             let strVal = saltedVal.toString(16);
             
-            // 加密字符串的每个字符
             for (let j = 0; j < strVal.length; j++) {
                 let code = strVal.charCodeAt(j);
                 let enc = code ^ key;
-                key = (key + 5) % 255; // 滚动 key
+                key = (key + 5) % 255; 
                 res += enc.toString(16).padStart(2, '0');
             }
-            res += "X"; // 分隔符
+            res += "X"; 
         }
-        // 添加校验和
         let sum = 0;
         for(let i=0; i<res.length; i++) sum = (sum + res.charCodeAt(i)) % 997;
         return res + "S" + sum.toString(16);
@@ -1537,7 +1774,6 @@ const ObscureStorage = {
 
     decrypt: function(str) {
         try {
-            // 1. 校验和检查
             let parts = str.split("S");
             if (parts.length !== 2) throw "Format Error";
             let body = parts[0];
@@ -1547,7 +1783,6 @@ const ObscureStorage = {
             for(let i=0; i<body.length; i++) sum = (sum + body.charCodeAt(i)) % 997;
             if (sum !== check) throw "Integrity Check Failed";
 
-            // 2. 解密
             let rawHexItems = body.split("X");
             let result = [];
             let key = 0xAB;
@@ -1565,7 +1800,6 @@ const ObscureStorage = {
                     realStr += String.fromCharCode(dec);
                 }
 
-                // 3. 去污染
                 let saltedVal = parseInt(realStr, 16);
                 let val = (saltedVal - (i * 3)) / this.SALT_MULT[i % this.SALT_MULT.length];
                 result.push(val);
@@ -1581,14 +1815,12 @@ const ObscureStorage = {
 function exportSave() {
     let stream = [];
 
-    // --- 全局变量区 (顺序固定) ---
     stream.push(Math.floor(gold));
     stream.push(lives);
     stream.push(wave);
     stream.push(waveActive ? 1 : 0);
     stream.push(autoWave ? 1 : 0);
 
-    // --- 塔数据 ---
     stream.push(towers.length);
     towers.forEach(t => {
         let typeIdx = TOWER_KEYS.indexOf(t.baseType);
@@ -1600,7 +1832,6 @@ function exportSave() {
         stream.push(t.drones.length);
     });
 
-    // --- 敌人数据 ---
     stream.push(enemies.length);
     enemies.forEach(e => {
         let typeIdx = ENEMY_KEYS.indexOf(e.typeKey);
@@ -1620,7 +1851,6 @@ function exportSave() {
     a.click();
 }
 
-// 核心读档逻辑：输入字符串，恢复游戏
 function importGameData(content) {
     const data = ObscureStorage.decrypt(content);
     if (!data) return false;
@@ -1698,6 +1928,7 @@ function importGameData(content) {
         document.getElementById('start-screen').classList.add('hidden');
         gameState = STATE.PAUSED;
         document.getElementById('pause-screen').classList.remove('hidden');
+        deselectAll();
         updateUI();
         return true;
     } catch (err) {
