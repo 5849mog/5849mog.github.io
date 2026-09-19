@@ -47,7 +47,7 @@ function renderSelection() {
   $("upgrade-btn").disabled = tower.level >= tower.maxLevel || game.gold < tower.upgradeCost; $("upgrade-btn").addEventListener("click", () => { if (game.upgradeSelected()) { beep(760, .08); showToast("结构升级完成", "gold"); } }); $("sell-btn").addEventListener("click", () => { if (game.sellSelected()) { beep(280, .08); showToast("结构已回收", "cyan"); } });
 }
 
-function render() {
+function renderHud() {
   $("gold-value").textContent = Math.floor(game.gold); $("life-value").textContent = game.lives; $("wave-value").textContent = game.wave; $("combo-value").textContent = game.combo;
   $("combo-pill").classList.toggle("active", game.combo > 2); $("auto-switch").classList.toggle("on", game.autoWave);
   $("wave-state").textContent = game.phase === "paused" ? "PAUSED" : game.phase === "gameover" ? "OFFLINE" : game.waveQueue.length || game.enemies.length ? "ENGAGED" : "STANDBY";
@@ -55,8 +55,12 @@ function render() {
   $("wave-btn").disabled = game.phase !== "playing" || Boolean(game.waveQueue.length || game.enemies.length || game.prepTimer > 0); $("wave-btn").querySelector("span").textContent = game.wave % 5 === 4 ? "召唤巨像波次" : "开始下一波";
   $("game-message").textContent = game.message;
   document.querySelectorAll(".tower-card").forEach((card) => { const type = TOWERS[card.dataset.key]; card.classList.toggle("selected", game.selectedBuild === card.dataset.key); card.classList.toggle("insufficient", game.gold < type.cost); });
-  renderSelection();
   if (game.message !== lastMessage) { lastMessage = game.message; $("stage-toast").textContent = game.message; $("stage-toast").style.opacity = "1"; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("stage-toast").style.opacity = "0"; }, 2600); }
+}
+
+function render() {
+  renderHud();
+  renderSelection();
   showModal("start-modal", game.phase === "menu"); showModal("pause-modal", game.phase === "paused"); showModal("gameover-modal", game.phase === "gameover");
   if (game.phase === "gameover") $("gameover-copy").textContent = `你坚持到了第 ${game.wave} 波，最终核心完整度为 ${Math.max(0, game.lives)}。`;
 }
@@ -76,6 +80,6 @@ function bind() {
   game.onChange(render);
 }
 
-function loop(now) { const dt = Math.min(GAME.maxDt, (now - lastTime) / 1000); lastTime = now; game.update(dt); renderer.draw(game); requestAnimationFrame(loop); }
+function loop(now) { const dt = Math.min(GAME.maxDt, (now - lastTime) / 1000); lastTime = now; game.update(dt); renderHud(); renderer.draw(game); requestAnimationFrame(loop); }
 
 bind(); renderer.resize(); render(); requestAnimationFrame(loop);

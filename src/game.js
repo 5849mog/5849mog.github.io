@@ -102,7 +102,6 @@ export class Game {
       this.message = `第 ${this.wave} 波完成 · 整备奖励 +${50 + this.wave * 8}`;
       this.effect({ kind: "clear", life: 0.8 });
     }
-    this.emit();
   }
 
   updateEffects(dt) { this.effects.forEach((effect) => { effect.life -= dt; }); this.effects = this.effects.filter((effect) => effect.life > 0); }
