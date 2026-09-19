@@ -10,8 +10,8 @@
 /* 真正的手机单屏模式：页面不滚动，地图与操作区共享同一视口。 */
 @media (max-width: 900px) {
   html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
-  .app-shell { height: 100dvh; min-height: 0; overflow: hidden; padding-top: env(safe-area-inset-top); }
-  .topbar { height: calc(54px + env(safe-area-inset-top)); padding: 0 10px; }
+  .app-shell { height: 100dvh; min-height: 0; overflow: hidden; }
+  .topbar { height: calc(54px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 10px 0; }
   .game-layout { height: calc(100dvh - 54px - env(safe-area-inset-top)); min-height: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 6px; overflow: hidden; }
   .stage-wrap { height: auto; min-height: 0; flex: 1 1 auto; border-radius: 14px; }
   .stage { min-height: 0; }
