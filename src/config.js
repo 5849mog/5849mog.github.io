@@ -1,4 +1,5 @@
-export const GRID = { cols: 13, rows: 21, tile: 40 };
+// 手机纵向屏幕优先：减少纵向格数，让完整地图在 375×812 内保持可读。
+export const GRID = { cols: 10, rows: 14, tile: 40 };
 export const WORLD = { width: GRID.cols * GRID.tile, height: GRID.rows * GRID.tile };
 
 export const GAME = {
